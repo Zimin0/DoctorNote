@@ -14,16 +14,13 @@ class Appointment(BaseEntityModel):
         verbose_name = "Запись к врачу"
         verbose_name_plural = "Записи к врачу"
          
-    #patient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='appointments')
     doctor = models.CharField(verbose_name="Врач", max_length=14, blank=False)  
     date = models.DateField(verbose_name="Дата", help_text="Формат: XX.XX.XXXX", blank=False)
     time = models.TimeField(verbose_name="Время", help_text="Формат: XX:XX", blank=False)
     address = models.CharField(verbose_name="Адрес", max_length=80, blank=False)
     office_number = models.CharField(verbose_name="Кабинет", max_length=6, blank=False)
     health_troubles = models.TextField(verbose_name="Жалобы", blank=True, null=True)
-    # archived = models.BooleanField(verbose_name="Архивировано?", default=False)
     report = models.TextField(verbose_name="Отчет после приема", blank=True, null=True)
-    # is_ended = models.BooleanField(verbose_name="Закончился ли прием?", default=False)
 
     objects = models.Manager() # базовый 
     active_appointments_sorted = ActiveAppointmentManager() # кастомный 
@@ -32,14 +29,16 @@ class Appointment(BaseEntityModel):
         return f'{self.doctor}: {self.date} в {self.time}'
     
     def save(self, *args, **kwargs):
-        self.is_ended = self.is_appointment_over()
+        self.is_ended = self.is_appointment_over
         super(Appointment, self).save(*args, **kwargs)
     
-    def is_report_was_added(self):
+    @property
+    def is_report_was_added(self) -> bool:
         """ Был ли загружен отчет. """
-        formatted = self.report.strip().replace('.','').replace(',','')
+        formatted = self.report.strip().strip('.').strip(',')
         return len(formatted) >= 3
 
+    @property
     def is_appointment_over(self) -> bool:
         """ Проверяет, прошла ли встреча у доктора исходя из назначенного времени."""
         current_timezone = timezone.get_current_timezone()

@@ -15,14 +15,12 @@ class Medicine(BaseEntityModel):
         verbose_name = "Лекарство"
         verbose_name_plural = "Лекарства"
 
-    # patient = models.ForeignKey(User, verbose_name="пациент", on_delete=models.CASCADE, related_name='medicines', default=None, null=True)
     title = models.CharField(verbose_name='Название', max_length=15)
     end_date = models.DateField(verbose_name='Последний день приема')
     today = models.IntegerField(verbose_name="Принято сегодня", default=0, validators=[MinValueValidator(0), ])
     amount_per_day = models.IntegerField(verbose_name='Кол-во раз в день', validators=[MinValueValidator(0),] )
     dosage = models.CharField(verbose_name='Дозировка за один прием', max_length=30, help_text='Например: 3 капсулы')
     comments = models.TextField(verbose_name='Комментарии')
-    # is_ended = models.BooleanField(verbose_name='Прием лекарства закончился?', default=False)
 
     objects = models.Manager()
     active_medicine_sorted = ActiveMedicineManager()
@@ -35,10 +33,11 @@ class Medicine(BaseEntityModel):
             raise ValidationError({'today': f'Значение должно быть не больше {self.amount_per_day}'})
 
     def save(self, *args, **kwargs):
-        self.is_ended = self.is_medicine_over()
+        self.is_ended = self.is_medicine_over
         self.full_clean()  # Вызов clean() для валидации перед сохранением
         super(Medicine, self).save(*args, **kwargs)
 
+    @property
     def is_medicine_over(self) -> bool:
         """ Проверяет, закончился ли прием лекарства. """
         current_timezone = timezone.get_current_timezone()
